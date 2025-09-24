@@ -1,0 +1,8 @@
+name: go-hello-world
+runtime: go
+build:
+  command: go build -o main .
+run:
+  command: ./main
+env:
+  PORT: 8080

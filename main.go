@@ -7,8 +7,6 @@ import (
     "net/http"
     "os"
     "time"
-
-    "github.com/gorilla/mux"
 )
 
 type Response struct {
@@ -45,6 +43,14 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(response)
 }
 
+func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+        next.ServeHTTP(w, r)
+        log.Printf("%s %s %s", r.Method, r.RequestURI, time.Since(start))
+    }
+}
+
 func main() {
     // Get port from environment variable, default to 8080
     port := os.Getenv("PORT")
@@ -52,28 +58,14 @@ func main() {
         port = "8080"
     }
 
-    // Create router
-    router := mux.NewRouter()
-
-    // Define routes
-    router.HandleFunc("/", helloHandler).Methods("GET")
-    router.HandleFunc("/health", healthHandler).Methods("GET")
-
-    // Add middleware for logging
-    router.Use(loggingMiddleware)
+    // Define routes with logging middleware
+    http.HandleFunc("/", loggingMiddleware(helloHandler))
+    http.HandleFunc("/health", loggingMiddleware(healthHandler))
 
     fmt.Printf("Server starting on port %s...\n", port)
     fmt.Printf("Visit http://localhost:%s for Hello World\n", port)
     fmt.Printf("Visit http://localhost:%s/health for health check\n", port)
 
     // Start server
-    log.Fatal(http.ListenAndServe(":"+port, router))
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        start := time.Now()
-        next.ServeHTTP(w, r)
-        log.Printf("%s %s %s", r.Method, r.RequestURI, time.Since(start))
-    })
+    log.Fatal(http.ListenAndServe(":"+port, nil))
 }

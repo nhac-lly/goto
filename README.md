@@ -44,34 +44,33 @@ A simple Go HTTP server that returns "Hello World" responses in JSON format, des
 
 - `PORT` - Server port (default: 8080)
 
-## Docker Deployment
-
-### Build Docker Image
-
-```bash
-docker build -t go-hello-world .
-```
-
-### Run Docker Container
-
-```bash
-docker run -p 8080:8080 go-hello-world
-```
-
 ## Leapcell Deployment
 
-This application is ready for deployment on Leapcell. The Dockerfile uses multi-stage builds for optimal image size and includes all necessary configurations.
+This application is ready for deployment on Leapcell using their native Go runtime support. No Docker required!
 
 ### Deployment Steps
 
 1. Push your code to a Git repository
 2. Connect your repository to Leapcell
-3. Leapcell will automatically detect the Dockerfile and build your application
+3. Leapcell will automatically detect the `leapcell.yaml` configuration and build your Go application
 4. The application will be available on the provided Leapcell URL
 
 ### Configuration
 
-The application automatically uses the `PORT` environment variable provided by Leapcell. No additional configuration is required.
+The project includes a `leapcell.yaml` file that tells Leapcell how to build and run your Go application:
+
+```yaml
+name: go-hello-world
+runtime: go
+build:
+  command: go build -o main .
+run:
+  command: ./main
+env:
+  PORT: 8080
+```
+
+The application automatically uses the `PORT` environment variable provided by Leapcell.
 
 ## Project Structure
 
@@ -79,8 +78,7 @@ The application automatically uses the `PORT` environment variable provided by L
 .
 ├── main.go          # Main application code
 ├── go.mod           # Go module definition
-├── go.sum           # Go module checksums
-├── Dockerfile       # Docker configuration
+├── leapcell.yaml    # Leapcell deployment configuration
 └── README.md        # This file
 ```
 
@@ -105,4 +103,4 @@ The application automatically uses the `PORT` environment variable provided by L
 
 ## Dependencies
 
-- [Gorilla Mux](https://github.com/gorilla/mux) - HTTP router and URL matcher
+This project uses only Go's standard library, making it lightweight and easy to deploy without external dependencies.
